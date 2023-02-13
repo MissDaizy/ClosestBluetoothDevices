@@ -78,8 +78,6 @@ public class MainActivity extends AppCompatActivity {
         findViews();
 
         mDevices = new ArrayList<>();
-        bluetoothManager = (BluetoothManager) getBaseContext().getSystemService(Context.BLUETOOTH_SERVICE);
-        bluetoothAdapter = bluetoothManager.getAdapter();
 
         setBluetoothAdapter();
         createIntentFilter();
@@ -88,7 +86,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setBluetoothAdapter() {
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        bluetoothAdapter = bluetoothManager.getAdapter();
+        bluetoothManager = (BluetoothManager) getBaseContext().getSystemService(Context.BLUETOOTH_SERVICE);
     }
 
     private void setListener() {
