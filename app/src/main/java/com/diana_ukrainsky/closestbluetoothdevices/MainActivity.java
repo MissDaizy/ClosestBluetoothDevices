@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
+import android.util.Log;
 import android.widget.Button;
 
 import androidx.activity.result.ActivityResult;
@@ -29,7 +30,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 import static android.bluetooth.BluetoothAdapter.*;
 
@@ -53,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
     private BluetoothAdapter mBluetoothAdapter;
 //    private List<BluetoothDevice> mDevices;
     private List<Device> bluetoothDevices;
+    private HashMap<String,Boolean> bluetoothDevicesMap;
     //common callback for location and nearby
     ActivityResultCallback<Boolean> permissionCallBack = new ActivityResultCallback<Boolean>() {
         @Override
@@ -84,9 +88,7 @@ public class MainActivity extends AppCompatActivity {
         setRecyclerView();
         setViewAdapter();
 
-        setBluetoothAdapter();
-        createIntentFilter();
-        registerReceiver(bluetoothScanReceiver, intentFilter);
+
 
         setListeners();
     }
@@ -267,22 +269,24 @@ public class MainActivity extends AppCompatActivity {
                 //discovery finishes, dismiss progress dialog
             } else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 //bluetooth device found
-                if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-                    int rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE);
+                int rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE);
+                String name = intent.getStringExtra(BluetoothDevice.EXTRA_NAME);
+                if (name != null) {
+                    device.setName(name);
+                    device.setDistance(calculateDistance(rssi));
+                    Log.d("pttt",name);
+                    if(bluetoothDevices.size() != 0) {
+                        Log.d("pttt",bluetoothDevices.get(bluetoothDevices.size() - 1).getName().toLowerCase());
+                    }
 
-                    String name = intent.getStringExtra(BluetoothDevice.EXTRA_NAME);
-                    if (name != null) {
-                        device.setName(name);
-                        device.setDistance(calculateDistance(rssi));
+                    if(bluetoothDevices.size() == 0 || !bluetoothDevices.get(bluetoothDevices.size()-1).equals(device.getName())){
 
-                        if(!device.getName().equals(bluetoothDevices.get(bluetoothDevices.size() - 1).getName())){
-                            // Add device to list
-                            bluetoothDevices.add(device);
+                        // Add device to list
+                        bluetoothDevices.add(device);
 
-                            // Put the device into recycler view that will show the devices
-                            deviceAdapter.setList(bluetoothDevices);
-                            deviceAdapter.notifyDataSetChanged();
-                        }
+                        // Put the device into recycler view that will show the devices
+                        deviceAdapter.setList(bluetoothDevices);
+                        deviceAdapter.notifyDataSetChanged();
                     }
                 }
             }
@@ -298,8 +302,13 @@ public class MainActivity extends AppCompatActivity {
     public void onResume() {
         super.onResume();
         try {
+            //registerReceiver(bluetoothScanReceiver, intentFilter);
+        if(bluetoothAdapter==null) {
+            setBluetoothAdapter();
+            createIntentFilter();
             registerReceiver(bluetoothScanReceiver, intentFilter);
-            //  tv.setText("receiver registered 2");
+        }
+
 
         } catch (Exception e) {
             // already registered
