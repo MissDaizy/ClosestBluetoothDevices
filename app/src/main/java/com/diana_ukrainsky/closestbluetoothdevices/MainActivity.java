@@ -61,8 +61,6 @@ public class MainActivity extends AppCompatActivity {
                 }else if(isGranted && !isLocationPermission){//nearby permission ok
                     //todo BLUETOOTH_SCAN
 
-                }else {
-                    requestPermissionWithRationaleCheck();// if current (location/nearby) no permission
                 }
             }
         }
@@ -86,8 +84,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setBluetoothAdapter() {
-        bluetoothAdapter = bluetoothManager.getAdapter();
         bluetoothManager = (BluetoothManager) getBaseContext().getSystemService(Context.BLUETOOTH_SERVICE);
+        bluetoothAdapter = bluetoothManager.getAdapter();
     }
 
     private void setListener() {
