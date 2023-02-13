@@ -40,7 +40,6 @@ public class MainActivity extends AppCompatActivity {
     private TextView tv, tv_devices;
     private Button btn_bluetoothScan;
     private Boolean isLocationPermission;
-    private boolean locationOk, nearbyOk;
 
     private static final int MANUALLY_LOCATION_PERMISSION_REQUEST_CODE = 124;
 
@@ -58,10 +57,10 @@ public class MainActivity extends AppCompatActivity {
             }
             else {
                 if (isGranted && isLocationPermission) {//location permission ok
-                    requestNearby();
-                    locationOk = true;
+                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        requestNearby();
+                    }
                 }else if(isGranted && !isLocationPermission){//nearby permission ok
-                    nearbyOk = true;
                 }
                 else{
                     openPermissionSettingDialog();
@@ -78,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         findViews();
-
+        registerReceiver(bluetoothScanReceiver, intentFilter);
         mDevices = new ArrayList<>();
 
         setBluetoothAdapter();
@@ -96,6 +95,7 @@ public class MainActivity extends AppCompatActivity {
 
         btn_bluetoothScan.setOnClickListener(v -> {
 
+            tv_devices.setText("");
             checkPermissions();
 
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
@@ -107,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             }
-            registerReceiver(bluetoothScanReceiver, intentFilter);
+//            registerReceiver(bluetoothScanReceiver, intentFilter);
 
             bluetoothAdapter.startDiscovery();
 
