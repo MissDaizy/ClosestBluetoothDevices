@@ -135,16 +135,9 @@ public class MainActivity extends AppCompatActivity {
 
         if(resultLocation) {
             requestLocation();
+            openPermissionSettingDialog();
         }else if (resultNearby){
             requestNearby();
-        }
-        else {
-//            isShowMessage = true;
-//            SharedPreferences.Editor editor = sharedPref.edit();
-//            editor.putBoolean(getString(R.string.is_show_message), isShowMessage);
-//            editor.apply();
-//            tv.setTextColor( getResources().getColor(R.color.purple_200));
-//            tv.setText(R.string.showMessage);
             openPermissionSettingDialog();
         }
 
@@ -207,6 +200,7 @@ public class MainActivity extends AppCompatActivity {
                     if (result.getResultCode() == Activity.RESULT_OK) {
                         //todo
                         //  requestLocation();
+                      //  requestNearby();
                     }
                 }
             });
