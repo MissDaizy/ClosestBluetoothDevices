@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ClosestBluetoothDevices</string>
+    <string name="app_name">ClosestBluetoothDevices_1302</string>
     <string name="preference_file_key">shared_pref</string>
     <string name="is_show_message">isShowMessage</string>
     <string name="showMessage">\"Manually allow both permissions: Location and Nearby.\"</string>
