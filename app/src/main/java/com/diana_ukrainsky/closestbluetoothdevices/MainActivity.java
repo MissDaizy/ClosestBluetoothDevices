@@ -78,9 +78,6 @@ public class MainActivity extends AppCompatActivity {
         findViews();
 
         mDevices = new ArrayList<>();
-        bluetoothManager = (BluetoothManager) getBaseContext().getSystemService(Context.BLUETOOTH_SERVICE);
-        bluetoothAdapter = bluetoothManager.getAdapter();
-
         setBluetoothAdapter();
         createIntentFilter();
 
@@ -88,7 +85,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setBluetoothAdapter() {
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        bluetoothManager = (BluetoothManager) getBaseContext().getSystemService(Context.BLUETOOTH_SERVICE);
+        bluetoothAdapter = bluetoothManager.getAdapter();
     }
 
     private void setListener() {
@@ -125,10 +123,10 @@ public class MainActivity extends AppCompatActivity {
 
         if(resultLocation) {
             requestLocation();
-            openPermissionSettingDialog();
+//            openPermissionSettingDialog();
         }else if (resultNearby){
             requestNearby();
-            openPermissionSettingDialog();
+//            openPermissionSettingDialog();
         }
     }
 
