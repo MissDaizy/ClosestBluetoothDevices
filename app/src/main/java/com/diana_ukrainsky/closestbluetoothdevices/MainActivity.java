@@ -14,6 +14,7 @@ import android.provider.Settings;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
@@ -21,9 +22,13 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+
 import android.os.Bundle;
+
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,12 +37,14 @@ import static android.bluetooth.BluetoothAdapter.*;
 
 public class MainActivity extends AppCompatActivity {
 
+    private RecyclerView recyclerView;
+    private DeviceAdapter deviceAdapter;
     private AlertDialog alertDialog;
 
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothManager bluetoothManager;
     private IntentFilter intentFilter;
-    private TextView tv, tv_devices;
+//    private TextView tv, tv_devices;
     private Button btn_bluetoothScan;
     private Boolean isLocationPermission;
 
@@ -52,17 +59,15 @@ public class MainActivity extends AppCompatActivity {
     ActivityResultCallback<Boolean> permissionCallBack = new ActivityResultCallback<Boolean>() {
         @Override
         public void onActivityResult(Boolean isGranted) {
-            if(isLocationPermission ==null) {
+            if (isLocationPermission == null) {
                 requestPermissionWithRationaleCheck();
-            }
-            else {
+            } else {
                 if (isGranted && isLocationPermission) {//location permission ok
-                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                         requestNearby();
                     }
-                }else if(isGranted && !isLocationPermission){//nearby permission ok
-                }
-                else{
+                } else if (isGranted && !isLocationPermission) {//nearby permission ok
+                } else {
                     openPermissionSettingDialog();
                 }
             }
@@ -77,13 +82,26 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         findViews();
-        registerReceiver(bluetoothScanReceiver, intentFilter);
+        setRecyclerView();
+        setViewAdapter();
         mDevices = new ArrayList<>();
 
         setBluetoothAdapter();
         createIntentFilter();
+        registerReceiver(bluetoothScanReceiver, intentFilter);
 
         setListener();
+    }
+
+    private void setRecyclerView() {
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(linearLayoutManager);
+    }
+
+    private void setViewAdapter() {
+        deviceAdapter=new DeviceAdapter();
+        recyclerView.setAdapter(deviceAdapter);
     }
 
     private void setBluetoothAdapter() {
@@ -95,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
 
         btn_bluetoothScan.setOnClickListener(v -> {
 
-            tv_devices.setText("");
+            // tv_devices.setText("");
             checkPermissions();
 
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
@@ -108,10 +126,9 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 //            registerReceiver(bluetoothScanReceiver, intentFilter);
-
-            bluetoothAdapter.startDiscovery();
-
-            tv.setText("receiver registered 1");
+            if (!bluetoothAdapter.isDiscovering()) {
+                bluetoothAdapter.startDiscovery();
+            }
         });
     }
 
@@ -119,26 +136,22 @@ public class MainActivity extends AppCompatActivity {
         boolean result = ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED;
         String str = "Bluetooth nearby permission= " + result;
         str += "\nShould Show Message= " + ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.BLUETOOTH_CONNECT);
-        tv.setText(str);
 
         boolean resultNearby = ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED;
         boolean resultLocation = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED;
 
-        if(resultLocation) {
+        if (resultLocation) {
             requestLocation();
 //            if (!locationOk) {
 //                openPermissionSettingDialog();
 //            }
-        }else if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (resultNearby) {
                 requestNearby();
 //                if(!nearbyOk) {
 //                    openPermissionSettingDialog();
 //                }
             }
-        }
-        else {
-            tv.setText("manually lw location & nearby permissions");
         }
     }
 
@@ -151,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
         if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.BLUETOOTH_CONNECT)) {
             openPermissionSettingDialog();
 
-        } else if(ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION)){
+        } else if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION)) {
             openPermissionSettingDialog();
 //            requestNearby();
         }
@@ -165,18 +178,19 @@ public class MainActivity extends AppCompatActivity {
 
     private void openPermissionSettingDialog() {
 
-            String message = "Location and Nearby permissions are important for app functionality. You will be transported to Setting screen because the permissions are permanently disable. Please manually allow them.";
-            alertDialog =
-                    new AlertDialog.Builder(MainActivity.this)
-                            .setMessage(message)
-                            .setPositiveButton(getString(android.R.string.ok),
-                                    (dialog, which) -> {
-                                        openSettingsManually();
-                                        dialog.cancel();
-                                    }).show();
-            alertDialog.setCanceledOnTouchOutside(true);
+        String message = "Location and Nearby permissions are important for app functionality. You will be transported to Setting screen because the permissions are permanently disable. Please manually allow them.";
+        alertDialog =
+                new AlertDialog.Builder(MainActivity.this)
+                        .setMessage(message)
+                        .setPositiveButton(getString(android.R.string.ok),
+                                (dialog, which) -> {
+                                    openSettingsManually();
+                                    dialog.cancel();
+                                }).show();
+        alertDialog.setCanceledOnTouchOutside(true);
 
     }
+
     private ActivityResultLauncher<Intent> manuallyPermissionResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             new ActivityResultCallback<ActivityResult>() {
@@ -210,8 +224,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void findViews() {
-        tv = findViewById(R.id.tv_broadcast);
-        tv_devices = findViewById(R.id.tv_devices);
+        recyclerView= findViewById(R.id.activityMain_RV_recyclerView);
+//        tv_devices = findViewById(R.id.tv_devices);
         btn_bluetoothScan = findViewById(R.id.btn_bluetoothScan);
     }
 
@@ -232,15 +246,23 @@ public class MainActivity extends AppCompatActivity {
 
             if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
                 //discovery starts, we can show progress dialog or perform other tasks
+                btn_bluetoothScan.setBackgroundColor(getColor(R.color.grey));
+                btn_bluetoothScan.setClickable(false);
             } else if (ACTION_DISCOVERY_FINISHED.equals(action)) {
+                btn_bluetoothScan.setBackgroundColor(getColor(R.color.purple_500));
+                // TODO: tvDevices
+//                tv_devices.setText("");
+                btn_bluetoothScan.setClickable(true);
+
                 //discovery finishes, dismiss progress dialog
             } else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 //bluetooth device found
-                if(BluetoothDevice.ACTION_FOUND.equals(action)) {
-                    int rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI,Short.MIN_VALUE);
+                if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+                    int rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE);
                     String name = intent.getStringExtra(BluetoothDevice.EXTRA_NAME);
-                    if(name != null) {
-                        tv_devices.append("\n" + name + " => " + calculateDistance(rssi) + "m\n");
+                    if (name != null) {
+                        // TODO: tvDevices
+//                        tv_devices.append("\n" + name + " => " + calculateDistance(rssi) + "m\n");
                     }
                 }
             }
@@ -257,25 +279,25 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         try {
             registerReceiver(bluetoothScanReceiver, intentFilter);
-          //  tv.setText("receiver registered 2");
+            //  tv.setText("receiver registered 2");
 
         } catch (Exception e) {
             // already registered
-         //   tv.setText("Receiver is already received");
+            //   tv.setText("Receiver is already received");
         }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        if(bluetoothScanReceiver!=null)
-             unregisterReceiver(bluetoothScanReceiver);
+        if (bluetoothScanReceiver != null)
+            unregisterReceiver(bluetoothScanReceiver);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (alertDialog!=null && alertDialog.isShowing()){
+        if (alertDialog != null && alertDialog.isShowing()) {
             alertDialog.dismiss();
         }
     }
