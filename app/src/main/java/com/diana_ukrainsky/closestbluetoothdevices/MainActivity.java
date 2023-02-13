@@ -24,6 +24,7 @@ import android.os.Bundle;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import static android.Manifest.permission.BLUETOOTH_CONNECT;
 import static android.bluetooth.BluetoothAdapter.*;
 
 public class MainActivity extends AppCompatActivity {
@@ -35,29 +36,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView tv, tv_devices;
     private Button btn_bluetoothScan;
     private Boolean isLocationPermission;
-
-    private SharedPreferences sharedPref;
-    private boolean isShowMessage;
-    private static final int REQUEST_LOCATION_PERMISSION = 1;
-    private final int REQUEST_CODE_PERMISSION_BLUETOOTH_CONNECT = 500;
-    private final int REQUEST_CODE_PERMISSION_BLUETOOTH_ACCESS_FINE_LOCATION = 501;
     private static final int MANUALLY_LOCATION_PERMISSION_REQUEST_CODE = 124;
-
-
-
-//    ActivityResultCallback<Boolean> nearbyPermissionCallBack = new ActivityResultCallback<Boolean>() {
-//        @Override
-//        public void onActivityResult(Boolean isGranted) {
-//
-//            if (isGranted) {
-//                requestNearby();
-//            }else {
-//                requestPermissionWithRationaleCheck();
-//            }
-//
-//        }
-//    };
-//    ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), nearbyPermissionCallBack);
 
 
     //common callback for location and nearby
@@ -88,27 +67,21 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         findViews();
-        setSharedPreferences();
-
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        setBluetoothAdapter();
         createIntentFilter();
-
-//        checkBluetoothPermission();
 
         setListener();
     }
 
-    private void setSharedPreferences() {
-        sharedPref = this.getSharedPreferences(
-                getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+    private void setBluetoothAdapter() {
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     }
 
     private void setListener() {
 
         btn_bluetoothScan.setOnClickListener(v -> {
 
-
-            checkBluetoothPermission();
+            checkPermissions();
 
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
 
@@ -127,13 +100,13 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void checkBluetoothPermission() {
-        boolean result = ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED;
+    private void checkPermissions() {
+        boolean result = ContextCompat.checkSelfPermission(this, BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED;
         String str = "Bluetooth nearby permission= " + result;
-        str += "\nShould Show Message= " + ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.BLUETOOTH_CONNECT);
+        str += "\nShould Show Message= " + ActivityCompat.shouldShowRequestPermissionRationale(this, BLUETOOTH_CONNECT);
         tv.setText(str);
 
-        boolean resultNearby = ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED;
+        boolean resultNearby = ContextCompat.checkSelfPermission(this, BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED;
         boolean resultLocation = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED;
 
         if(resultLocation) {
@@ -143,29 +116,16 @@ public class MainActivity extends AppCompatActivity {
             requestNearby();
             openPermissionSettingDialog();
         }
-
-
-//        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_DENIED) {
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-//                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 2);
-//                //  return;
-//            }
-//        }
-//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//            ActivityCompat.requestPermissions(this,
-//                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
-//                    REQUEST_LOCATION_PERMISSION);
-//        }
     }
 
     private void requestNearby() {
         isLocationPermission = false;
-        requestPermissionLauncher.launch(Manifest.permission.BLUETOOTH_CONNECT);
+        requestPermissionLauncher.launch(BLUETOOTH_CONNECT);
     }
 
 
     private void requestPermissionWithRationaleCheck() {
-        if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.BLUETOOTH_CONNECT)) {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, BLUETOOTH_CONNECT)) {
             openPermissionSettingDialog();
 
         } else if(ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION)){
@@ -212,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == MANUALLY_LOCATION_PERMISSION_REQUEST_CODE) {
-            boolean result = ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED;
+            boolean result = ContextCompat.checkSelfPermission(this, BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED;
             if (result) {
                 requestNearby();
                 return;
@@ -291,16 +251,14 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         if(bluetoothScanReceiver!=null)
-
              unregisterReceiver(bluetoothScanReceiver);
-
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-//        if (d!=null && pDialog.isShowing()){
-//            pDialog.dismiss();
-//        }
+        if (alertDialog!=null && alertDialog.isShowing()){
+            alertDialog.dismiss();
+        }
     }
 }
