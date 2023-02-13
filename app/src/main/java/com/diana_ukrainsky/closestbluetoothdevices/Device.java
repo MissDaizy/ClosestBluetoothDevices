@@ -3,7 +3,6 @@ package com.diana_ukrainsky.closestbluetoothdevices;
 import java.util.UUID;
 
 public class Device {
-    private UUID id ;
     private String name;
     private double distance;
 
