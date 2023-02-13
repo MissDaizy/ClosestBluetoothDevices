@@ -40,18 +40,13 @@ public class MainActivity extends AppCompatActivity {
     private AlertDialog alertDialog;
     private Device device;
     private BluetoothAdapter bluetoothAdapter;
-    private BluetoothManager bluetoothManager;
     private IntentFilter intentFilter;
     private Button btn_bluetoothScan;
     private Boolean isLocationPermission;
 
     private static final int MANUALLY_LOCATION_PERMISSION_REQUEST_CODE = 124;
 
-
-    private static final int REQUEST_ENABLE_BT = 1;
-    private static final int PERMISSION_REQUEST_COARSE_LOCATION = 2;
-    private BluetoothAdapter mBluetoothAdapter;
-//    private List<BluetoothDevice> mDevices;
+    //    private List<BluetoothDevice> mDevices;
     private List<Device> bluetoothDevices;
     //common callback for location and nearby
     ActivityResultCallback<Boolean> permissionCallBack = new ActivityResultCallback<Boolean>() {
@@ -64,7 +59,6 @@ public class MainActivity extends AppCompatActivity {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                         requestNearby();
                     }
-                } else if (isGranted && !isLocationPermission) {//nearby permission ok
                 } else {
                     openPermissionSettingDialog();
                 }
@@ -98,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setViewAdapter() {
-        deviceAdapter=new DeviceAdapter(this,bluetoothDevices);
+        deviceAdapter = new DeviceAdapter(this, bluetoothDevices);
         recyclerView.setAdapter(deviceAdapter);
     }
 
@@ -108,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setBluetoothAdapter() {
-        bluetoothManager = (BluetoothManager) getBaseContext().getSystemService(Context.BLUETOOTH_SERVICE);
+        BluetoothManager bluetoothManager = (BluetoothManager) getBaseContext().getSystemService(Context.BLUETOOTH_SERVICE);
         bluetoothAdapter = bluetoothManager.getAdapter();
     }
 
@@ -136,24 +130,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkPermissions() {
-        boolean result = ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED;
-        String str = "Bluetooth nearby permission= " + result;
-        str += "\nShould Show Message= " + ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.BLUETOOTH_CONNECT);
 
         boolean resultNearby = ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED;
         boolean resultLocation = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED;
 
         if (resultLocation) {
             requestLocation();
-//            if (!locationOk) {
-//                openPermissionSettingDialog();
-//            }
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (resultNearby) {
                 requestNearby();
-//                if(!nearbyOk) {
-//                    openPermissionSettingDialog();
-//                }
             }
         }
     }
@@ -194,14 +179,11 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private ActivityResultLauncher<Intent> manuallyPermissionResultLauncher = registerForActivityResult(
+    private final ActivityResultLauncher<Intent> manuallyPermissionResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
-            new ActivityResultCallback<ActivityResult>() {
-                @Override
-                public void onActivityResult(ActivityResult result) {
-                    if (result.getResultCode() == Activity.RESULT_OK) {
-                        //The broadcast is start working
-                    }
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    //The broadcast is start working
                 }
             });
 
@@ -212,7 +194,7 @@ public class MainActivity extends AppCompatActivity {
             boolean result = ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED;
             if (result) {
                 requestNearby();
-                return;
+
             }
         }
     }
@@ -227,7 +209,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void findViews() {
-        recyclerView= findViewById(R.id.activityMain_RV_recyclerView);
+        recyclerView = findViewById(R.id.activityMain_RV_recyclerView);
 //        tv_devices = findViewById(R.id.tv_devices);
         btn_bluetoothScan = findViewById(R.id.btn_bluetoothScan);
     }
@@ -243,7 +225,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private final BroadcastReceiver bluetoothScanReceiver = new BroadcastReceiver() {
-        @SuppressLint("MissingPermission")
+        @SuppressLint({"MissingPermission", "NotifyDataSetChanged"})
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
 
@@ -267,24 +249,23 @@ public class MainActivity extends AppCompatActivity {
                 //discovery finishes, dismiss progress dialog
             } else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 //bluetooth device found
-                if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-                    int rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE);
+                int rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE);
 
-                    String name = intent.getStringExtra(BluetoothDevice.EXTRA_NAME);
-                    if (name != null) {
-                        device.setName(name);
-                        device.setDistance(calculateDistance(rssi));
+                String name = intent.getStringExtra(BluetoothDevice.EXTRA_NAME);
+                if (name != null) {
+                    device.setName(name);
+                    device.setDistance(calculateDistance(rssi));
 
-                        if(!device.getName().equals(bluetoothDevices.get(bluetoothDevices.size() - 1).getName())){
-                            // Add device to list
-                            bluetoothDevices.add(device);
+//                    if (bluetoothDevices.size() == 0 || !device.getName().equals(bluetoothDevices.get(bluetoothDevices.size() - 1).getName())) {
+                        // Add device to list
+                        bluetoothDevices.add(device);
 
-                            // Put the device into recycler view that will show the devices
-                            deviceAdapter.setList(bluetoothDevices);
-                            deviceAdapter.notifyDataSetChanged();
-                        }
-                    }
+                        // Put the device into recycler view that will show the devices
+                        deviceAdapter.setList(bluetoothDevices);
+                        deviceAdapter.notifyDataSetChanged();
+//                    }
                 }
+
             }
         }
     };
