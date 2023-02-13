@@ -27,6 +27,9 @@ import androidx.core.content.ContextCompat;
 import static android.bluetooth.BluetoothAdapter.*;
 
 public class MainActivity extends AppCompatActivity {
+
+    private AlertDialog alertDialog;
+
     private BluetoothAdapter bluetoothAdapter;
     private IntentFilter intentFilter;
     private TextView tv, tv_devices;
@@ -181,7 +184,7 @@ public class MainActivity extends AppCompatActivity {
     private void openPermissionSettingDialog() {
 
             String message = "Location and Nearby permissions are important for app functionality. You will be transported to Setting screen because the permissions are permanently disable. Please manually allow them.";
-            AlertDialog alertDialog =
+            alertDialog =
                     new AlertDialog.Builder(MainActivity.this)
                             .setMessage(message)
                             .setPositiveButton(getString(android.R.string.ok),
@@ -291,5 +294,13 @@ public class MainActivity extends AppCompatActivity {
 
              unregisterReceiver(bluetoothScanReceiver);
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+//        if (d!=null && pDialog.isShowing()){
+//            pDialog.dismiss();
+//        }
     }
 }
