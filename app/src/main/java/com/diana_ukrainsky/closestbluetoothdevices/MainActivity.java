@@ -40,6 +40,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView tv, tv_devices;
     private Button btn_bluetoothScan;
     private Boolean isLocationPermission;
+    private boolean locationOk, nearbyOk;
+
     private static final int MANUALLY_LOCATION_PERMISSION_REQUEST_CODE = 124;
 
 
@@ -57,10 +59,12 @@ public class MainActivity extends AppCompatActivity {
             else {
                 if (isGranted && isLocationPermission) {//location permission ok
                     requestNearby();
-
+                    locationOk = true;
                 }else if(isGranted && !isLocationPermission){//nearby permission ok
-                    //todo BLUETOOTH_SCAN
-
+                    nearbyOk = true;
+                }
+                else{
+                    openPermissionSettingDialog();
                 }
             }
         }
@@ -122,10 +126,19 @@ public class MainActivity extends AppCompatActivity {
 
         if(resultLocation) {
             requestLocation();
-            openPermissionSettingDialog();
-        }else if (resultNearby){
-            requestNearby();
-            openPermissionSettingDialog();
+//            if (!locationOk) {
+//                openPermissionSettingDialog();
+//            }
+        }else if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (resultNearby) {
+                requestNearby();
+//                if(!nearbyOk) {
+//                    openPermissionSettingDialog();
+//                }
+            }
+        }
+        else {
+            tv.setText("manually lw location & nearby permissions");
         }
     }
 
