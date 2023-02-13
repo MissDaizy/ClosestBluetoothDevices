@@ -31,15 +31,17 @@ public class MainActivity extends AppCompatActivity {
     private IntentFilter intentFilter;
     private TextView tv, tv_devices;
     private Button btn_bluetoothScan;
-    private Boolean isFirstPermission;
+    private Boolean isLocationPermission;
 
     private SharedPreferences sharedPref;
-    private boolean isShowMassage;
+    private boolean isShowMessage;
     private static final int REQUEST_LOCATION_PERMISSION = 1;
-
     private final int REQUEST_CODE_PERMISSION_BLUETOOTH_CONNECT = 500;
     private final int REQUEST_CODE_PERMISSION_BLUETOOTH_ACCESS_FINE_LOCATION = 501;
     private static final int MANUALLY_LOCATION_PERMISSION_REQUEST_CODE = 124;
+
+
+
 //    ActivityResultCallback<Boolean> nearbyPermissionCallBack = new ActivityResultCallback<Boolean>() {
 //        @Override
 //        public void onActivityResult(Boolean isGranted) {
@@ -53,20 +55,20 @@ public class MainActivity extends AppCompatActivity {
 //        }
 //    };
 //    ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), nearbyPermissionCallBack);
-//
+
 
     //common callback for location and nearby
     ActivityResultCallback<Boolean> permissionCallBack = new ActivityResultCallback<Boolean>() {
         @Override
         public void onActivityResult(Boolean isGranted) {
-            if(isFirstPermission ==null) {
+            if(isLocationPermission ==null) {
                 requestPermissionWithRationaleCheck();
             }
             else {
-                if (isGranted && isFirstPermission) {//location permission ok
+                if (isGranted && isLocationPermission) {//location permission ok
                     requestNearby();
 
-                }else if(isGranted && !isFirstPermission){//nearby permission ok
+                }else if(isGranted && !isLocationPermission){//nearby permission ok
                     //todo BLUETOOTH_SCAN
 
                 }else {
@@ -137,13 +139,13 @@ public class MainActivity extends AppCompatActivity {
             requestNearby();
         }
         else {
-            isShowMassage = true;
-            SharedPreferences.Editor editor = sharedPref.edit();
-            editor.putBoolean(getString(R.string.is_show_message), isShowMassage);
-            editor.apply();
-            tv.setTextColor( getResources().getColor(R.color.purple_200));
-            tv.setText(R.string.showMessage);
-
+//            isShowMessage = true;
+//            SharedPreferences.Editor editor = sharedPref.edit();
+//            editor.putBoolean(getString(R.string.is_show_message), isShowMessage);
+//            editor.apply();
+//            tv.setTextColor( getResources().getColor(R.color.purple_200));
+//            tv.setText(R.string.showMessage);
+            openPermissionSettingDialog();
         }
 
 
@@ -161,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void requestNearby() {
-        isFirstPermission = false;
+        isLocationPermission = false;
         requestPermissionLauncher.launch(Manifest.permission.BLUETOOTH_CONNECT);
     }
 
@@ -179,7 +181,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void requestLocation() {
-        isFirstPermission = true;
+        isLocationPermission = true;
         requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
     }
 
