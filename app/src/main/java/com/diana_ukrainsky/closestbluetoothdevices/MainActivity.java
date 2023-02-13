@@ -242,7 +242,7 @@ public class MainActivity extends AppCompatActivity {
                 bluetoothDevices.clear();
                 listOfNames.clear();
                 deviceAdapter.setList(bluetoothDevices);
-                deviceAdapter.notifyDataSetChanged();
+                //deviceAdapter.notifyDataSetChanged();
 
             } else if (ACTION_DISCOVERY_FINISHED.equals(action)) {
                 // Enable button
@@ -261,12 +261,14 @@ public class MainActivity extends AppCompatActivity {
                         Log.d("pttt",bluetoothDevices.get(bluetoothDevices.size() - 1).getName().toLowerCase());
                     }
 
-                    if(bluetoothDevices.size() == 0 || !  listOfNames.contains(device.getName())){
-                        listOfNames.add(device.getName());
+                    if(bluetoothDevices.size() == 0 || !  listOfNames.contains(name)){
                         device.setName(name);
                         device.setDistance(calculateDistance(rssi));
                         // Add device to list
                         bluetoothDevices.add(device);
+                        listOfNames.add(name);
+
+
 
                         // Put the device into recycler view that will show the devices
                         deviceAdapter.addToList(device);

@@ -43,8 +43,11 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.MyViewHold
     }
 
     public void setList( List<Device> updatedDeviceList){
-        this.deviceList.addAll(updatedDeviceList);
-        this.notifyDataSetChanged();
+        int oldSize=getItemCount();
+//        this.deviceList=updatedDeviceList;
+        this.deviceList.clear();
+        this.notifyItemRangeRemoved(0,oldSize);
+     //   this.notifyDataSetChanged();
     }
 
     public void addToList( Device device){
