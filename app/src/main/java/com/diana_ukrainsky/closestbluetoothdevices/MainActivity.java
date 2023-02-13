@@ -12,8 +12,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
 import android.widget.Button;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
@@ -53,7 +51,8 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_ENABLE_BT = 1;
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 2;
     private BluetoothAdapter mBluetoothAdapter;
-    private List<BluetoothDevice> mDevices;
+//    private List<BluetoothDevice> mDevices;
+    private List<Device> bluetoothDevices;
     //common callback for location and nearby
     ActivityResultCallback<Boolean> permissionCallBack = new ActivityResultCallback<Boolean>() {
         @Override
@@ -80,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        setData();
         findViews();
         setRecyclerView();
         setViewAdapter();
@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
         createIntentFilter();
         registerReceiver(bluetoothScanReceiver, intentFilter);
 
-        setListener();
+        setListeners();
     }
 
     private void setRecyclerView() {
@@ -98,8 +98,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setViewAdapter() {
-        deviceAdapter=new DeviceAdapter();
+        deviceAdapter=new DeviceAdapter(this,bluetoothDevices);
         recyclerView.setAdapter(deviceAdapter);
+    }
+
+    private void setData() {
+        bluetoothDevices = new ArrayList<>();
+        device = new Device();
     }
 
     private void setBluetoothAdapter() {
@@ -107,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
         bluetoothAdapter = bluetoothManager.getAdapter();
     }
 
-    private void setListener() {
+    private void setListeners() {
 
         btn_bluetoothScan.setOnClickListener(v -> {
 

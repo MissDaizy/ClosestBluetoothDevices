@@ -1,5 +1,7 @@
 package com.diana_ukrainsky.closestbluetoothdevices;
 
+import android.content.Context;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -7,23 +9,43 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.MyViewHolder> {
 
+    private List<Device> deviceList;
+    private Context context;
+
+    public DeviceAdapter(Context context, List<Device> deviceList) {
+        this.context=context;
+        deviceList=new ArrayList<>();
+        this.deviceList=deviceList;
+    }
 
     @NonNull
     @Override
     public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return null;
+        LayoutInflater layoutInflater = LayoutInflater.from (parent.getContext ());
+        View viewItem = layoutInflater.inflate (R.layout.device_item, parent, false);
+        return new MyViewHolder(viewItem);
     }
 
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
-
+        Device device=deviceList.get(position);
+        holder.bind(device);
     }
 
     @Override
     public int getItemCount() {
-        return 0;
+        return deviceList.size();
+    }
+
+    public void setList( List<Device> updatedDeviceList){
+//        this.deviceList.clear();
+        this.deviceList=updatedDeviceList;
+        this.notifyDataSetChanged();
     }
 
     class MyViewHolder extends RecyclerView.ViewHolder {
