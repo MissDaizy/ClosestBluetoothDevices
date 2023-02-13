@@ -19,7 +19,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
+            android:orientation="vertical"
             android:layout_margin="10dp">
         <LinearLayout
             android:layout_width="wrap_content"
@@ -44,14 +44,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_margin="10dp"
-            android:layout_gravity="end|center">
+            android:layout_margin="10dp">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/distance_preview"
                 android:layout_marginEnd="10dp"
-                android:layout_marginStart="20dp"
                 android:textSize="12sp"/>
             <TextView
                 android:id="@+id/deviceItem_TXT_deviceDistance"

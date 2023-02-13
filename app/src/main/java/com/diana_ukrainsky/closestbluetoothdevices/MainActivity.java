@@ -11,10 +11,8 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
-import android.util.Log;
 import android.widget.Button;
 
-import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -30,9 +28,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 
 import static android.bluetooth.BluetoothAdapter.*;
 
@@ -50,7 +46,6 @@ public class MainActivity extends AppCompatActivity {
     private static final int MANUALLY_LOCATION_PERMISSION_REQUEST_CODE = 124;
     private List<Device> bluetoothDevices;
     private List<String> listOfNames;
-    private HashMap<String,Boolean> bluetoothDevicesMap;
 
     //common callback for location and nearby
     ActivityResultCallback<Boolean> permissionCallBack = new ActivityResultCallback<Boolean>() {
@@ -132,7 +127,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void checkPermissions() {
 
-        boolean resultNearby = ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED;
+        boolean resultNearby = false;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            resultNearby = ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED;
+        }
         boolean resultLocation = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED;
 
         if (resultLocation) {
@@ -146,7 +144,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void requestNearby() {
         isLocationPermission = false;
-        requestPermissionLauncher.launch(Manifest.permission.BLUETOOTH_CONNECT);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            requestPermissionLauncher.launch(Manifest.permission.BLUETOOTH_CONNECT);
+        }
     }
 
     private void requestPermissionWithRationaleCheck() {
@@ -192,7 +192,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == MANUALLY_LOCATION_PERMISSION_REQUEST_CODE) {
-            boolean result = ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED;
+            boolean result = false;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                result = ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED;
+            }
             if (result) {
                 requestNearby();
 
@@ -241,8 +244,7 @@ public class MainActivity extends AppCompatActivity {
                 // Clear the recycler view
                 bluetoothDevices.clear();
                 listOfNames.clear();
-                deviceAdapter.setList(bluetoothDevices);
-                //deviceAdapter.notifyDataSetChanged();
+                deviceAdapter.clearList();
 
             } else if (ACTION_DISCOVERY_FINISHED.equals(action)) {
                 // Enable button
@@ -256,19 +258,12 @@ public class MainActivity extends AppCompatActivity {
                 String name = intent.getStringExtra(BluetoothDevice.EXTRA_NAME);
                 if (name != null) {
 
-                    Log.d("pttt",name);
-                    if(bluetoothDevices.size() != 0) {
-                        Log.d("pttt",bluetoothDevices.get(bluetoothDevices.size() - 1).getName().toLowerCase());
-                    }
-
-                    if(bluetoothDevices.size() == 0 || !  listOfNames.contains(name)){
+                    if(listOfNames.size() == 0 || !  listOfNames.contains(name)){
                         device.setName(name);
                         device.setDistance(calculateDistance(rssi));
                         // Add device to list
                         bluetoothDevices.add(device);
                         listOfNames.add(name);
-
-
 
                         // Put the device into recycler view that will show the devices
                         deviceAdapter.addToList(device);

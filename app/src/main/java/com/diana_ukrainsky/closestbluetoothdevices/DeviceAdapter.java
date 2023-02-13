@@ -42,12 +42,10 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.MyViewHold
         return deviceList.size();
     }
 
-    public void setList( List<Device> updatedDeviceList){
+    public void clearList(){
         int oldSize=getItemCount();
-//        this.deviceList=updatedDeviceList;
         this.deviceList.clear();
         this.notifyItemRangeRemoved(0,oldSize);
-     //   this.notifyDataSetChanged();
     }
 
     public void addToList( Device device){
@@ -55,7 +53,7 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.MyViewHold
         this.notifyItemInserted(deviceList.size()-1);
     }
 
-    class MyViewHolder extends RecyclerView.ViewHolder {
+    static class MyViewHolder extends RecyclerView.ViewHolder {
         TextView deviceItem_TXT_deviceName, deviceItem_TXT_deviceDistance;
         public MyViewHolder(@NonNull View itemView) {
 
@@ -65,7 +63,7 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.MyViewHold
         }
         public void bind( Device device ){
             deviceItem_TXT_deviceName.setText(device.getName());
-            deviceItem_TXT_deviceDistance.setText(""+device.getDistance());
+            deviceItem_TXT_deviceDistance.setText(device.getDistance() + "m from you.");
         }
     }
 
