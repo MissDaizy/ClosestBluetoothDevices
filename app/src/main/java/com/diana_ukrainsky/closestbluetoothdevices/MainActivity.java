@@ -56,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
     private BluetoothAdapter mBluetoothAdapter;
 //    private List<BluetoothDevice> mDevices;
     private List<Device> bluetoothDevices;
+    private List<String> listOfNames;
     private HashMap<String,Boolean> bluetoothDevicesMap;
     //common callback for location and nearby
     ActivityResultCallback<Boolean> permissionCallBack = new ActivityResultCallback<Boolean>() {
@@ -88,8 +89,6 @@ public class MainActivity extends AppCompatActivity {
         setRecyclerView();
         setViewAdapter();
 
-
-
         setListeners();
     }
 
@@ -107,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
     private void setData() {
         bluetoothDevices = new ArrayList<>();
         device = new Device();
+        listOfNames= new ArrayList<>();
     }
 
     private void setBluetoothAdapter() {
@@ -229,7 +229,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void findViews() {
-        recyclerView= findViewById(R.id.activityMain_RV_recyclerView);
+        if(recyclerView==null)
+             recyclerView= findViewById(R.id.activityMain_RV_recyclerView);
 //        tv_devices = findViewById(R.id.tv_devices);
         btn_bluetoothScan = findViewById(R.id.btn_bluetoothScan);
     }
@@ -258,6 +259,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // Clear the recycler view
                 bluetoothDevices.clear();
+                listOfNames.clear();
                 deviceAdapter.setList(bluetoothDevices);
                 deviceAdapter.notifyDataSetChanged();
 
@@ -272,21 +274,21 @@ public class MainActivity extends AppCompatActivity {
                 int rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE);
                 String name = intent.getStringExtra(BluetoothDevice.EXTRA_NAME);
                 if (name != null) {
-                    device.setName(name);
-                    device.setDistance(calculateDistance(rssi));
+
                     Log.d("pttt",name);
                     if(bluetoothDevices.size() != 0) {
                         Log.d("pttt",bluetoothDevices.get(bluetoothDevices.size() - 1).getName().toLowerCase());
                     }
 
-                    if(bluetoothDevices.size() == 0 || !bluetoothDevices.get(bluetoothDevices.size()-1).equals(device.getName())){
-
+                    if(bluetoothDevices.size() == 0 || !  listOfNames.contains(device.getName())){
+                        listOfNames.add(device.getName());
+                        device.setName(name);
+                        device.setDistance(calculateDistance(rssi));
                         // Add device to list
                         bluetoothDevices.add(device);
 
                         // Put the device into recycler view that will show the devices
-                        deviceAdapter.setList(bluetoothDevices);
-                        deviceAdapter.notifyDataSetChanged();
+                        deviceAdapter.addToList(device);
                     }
                 }
             }
