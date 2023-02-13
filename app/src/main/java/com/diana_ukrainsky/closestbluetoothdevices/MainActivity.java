@@ -40,11 +40,10 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private DeviceAdapter deviceAdapter;
     private AlertDialog alertDialog;
-
+    private Device device;
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothManager bluetoothManager;
     private IntentFilter intentFilter;
-//    private TextView tv, tv_devices;
     private Button btn_bluetoothScan;
     private Boolean isLocationPermission;
 
@@ -84,7 +83,6 @@ public class MainActivity extends AppCompatActivity {
         findViews();
         setRecyclerView();
         setViewAdapter();
-        mDevices = new ArrayList<>();
 
         setBluetoothAdapter();
         createIntentFilter();
@@ -245,13 +243,16 @@ public class MainActivity extends AppCompatActivity {
             String action = intent.getAction();
 
             if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
-                //discovery starts, we can show progress dialog or perform other tasks
+                //discovery starts
                 btn_bluetoothScan.setBackgroundColor(getColor(R.color.grey));
                 btn_bluetoothScan.setClickable(false);
             } else if (ACTION_DISCOVERY_FINISHED.equals(action)) {
                 btn_bluetoothScan.setBackgroundColor(getColor(R.color.purple_500));
-                // TODO: tvDevices
-//                tv_devices.setText("");
+
+                // clear the recycler view
+//                bluetoothDevices.clear();
+//                deviceAdapter.setList(bluetoothDevices);
+
                 btn_bluetoothScan.setClickable(true);
 
                 //discovery finishes, dismiss progress dialog
@@ -259,10 +260,20 @@ public class MainActivity extends AppCompatActivity {
                 //bluetooth device found
                 if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                     int rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE);
+
                     String name = intent.getStringExtra(BluetoothDevice.EXTRA_NAME);
                     if (name != null) {
-                        // TODO: tvDevices
-//                        tv_devices.append("\n" + name + " => " + calculateDistance(rssi) + "m\n");
+                        device.setName(name);
+                        device.setDistance(calculateDistance(rssi));
+
+                       // bluetoothDevices.clear();
+                        // Add device to list
+                        bluetoothDevices.add(device);
+
+                        // Put the device into recycler view that will show the devices
+                        deviceAdapter.setList(bluetoothDevices);
+                        deviceAdapter.notifyDataSetChanged();
+
                     }
                 }
             }
