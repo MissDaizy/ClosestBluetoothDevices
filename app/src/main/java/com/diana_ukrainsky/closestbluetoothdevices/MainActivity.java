@@ -61,8 +61,6 @@ public class MainActivity extends AppCompatActivity {
                 }else if(isGranted && !isLocationPermission){//nearby permission ok
                     //todo BLUETOOTH_SCAN
 
-                }else {
-                    requestPermissionWithRationaleCheck();// if current (location/nearby) no permission
                 }
             }
         }
@@ -78,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
         findViews();
 
         mDevices = new ArrayList<>();
+
         setBluetoothAdapter();
         createIntentFilter();
 
@@ -123,10 +122,10 @@ public class MainActivity extends AppCompatActivity {
 
         if(resultLocation) {
             requestLocation();
-//            openPermissionSettingDialog();
+            openPermissionSettingDialog();
         }else if (resultNearby){
             requestNearby();
-//            openPermissionSettingDialog();
+            openPermissionSettingDialog();
         }
     }
 
