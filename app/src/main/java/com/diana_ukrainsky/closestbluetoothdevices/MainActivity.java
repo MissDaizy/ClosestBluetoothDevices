@@ -248,16 +248,20 @@ public class MainActivity extends AppCompatActivity {
             String action = intent.getAction();
 
             if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
-                //discovery starts
+                // Discovery starts
+
+                // Disable button
                 btn_bluetoothScan.setBackgroundColor(getColor(R.color.grey));
                 btn_bluetoothScan.setClickable(false);
+
+                // Clear the recycler view
+                bluetoothDevices.clear();
+                deviceAdapter.setList(bluetoothDevices);
+                deviceAdapter.notifyDataSetChanged();
+
             } else if (ACTION_DISCOVERY_FINISHED.equals(action)) {
+                // Enable button
                 btn_bluetoothScan.setBackgroundColor(getColor(R.color.purple_500));
-
-                // clear the recycler view
-//                bluetoothDevices.clear();
-//                deviceAdapter.setList(bluetoothDevices);
-
                 btn_bluetoothScan.setClickable(true);
 
                 //discovery finishes, dismiss progress dialog
@@ -271,14 +275,14 @@ public class MainActivity extends AppCompatActivity {
                         device.setName(name);
                         device.setDistance(calculateDistance(rssi));
 
-                       // bluetoothDevices.clear();
-                        // Add device to list
-                        bluetoothDevices.add(device);
+                        if(!device.getName().equals(bluetoothDevices.get(bluetoothDevices.size() - 1).getName())){
+                            // Add device to list
+                            bluetoothDevices.add(device);
 
-                        // Put the device into recycler view that will show the devices
-                        deviceAdapter.setList(bluetoothDevices);
-                        deviceAdapter.notifyDataSetChanged();
-
+                            // Put the device into recycler view that will show the devices
+                            deviceAdapter.setList(bluetoothDevices);
+                            deviceAdapter.notifyDataSetChanged();
+                        }
                     }
                 }
             }
