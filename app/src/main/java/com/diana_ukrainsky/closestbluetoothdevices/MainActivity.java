@@ -31,17 +31,19 @@ import java.util.List;
 import static android.bluetooth.BluetoothAdapter.*;
 
 public class MainActivity extends AppCompatActivity {
+
+    private AlertDialog alertDialog;
+
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothManager bluetoothManager;
     private IntentFilter intentFilter;
     private TextView tv, tv_devices;
     private Button btn_bluetoothScan;
-    private Boolean isFirstPermission;
+    private Boolean isLocationPermission;
 
     private SharedPreferences sharedPref;
-    private boolean isShowMassage;
+    private boolean isShowMessage;
     private static final int REQUEST_LOCATION_PERMISSION = 1;
-
     private final int REQUEST_CODE_PERMISSION_BLUETOOTH_CONNECT = 500;
     private final int REQUEST_CODE_PERMISSION_BLUETOOTH_ACCESS_FINE_LOCATION = 501;
     private static final int MANUALLY_LOCATION_PERMISSION_REQUEST_CODE = 124;
@@ -54,14 +56,14 @@ public class MainActivity extends AppCompatActivity {
     ActivityResultCallback<Boolean> permissionCallBack = new ActivityResultCallback<Boolean>() {
         @Override
         public void onActivityResult(Boolean isGranted) {
-            if(isFirstPermission ==null) {
+            if(isLocationPermission ==null) {
                 requestPermissionWithRationaleCheck();
             }
             else {
-                if (isGranted && isFirstPermission) {//location permission ok
+                if (isGranted && isLocationPermission) {//location permission ok
                     requestNearby();
 
-                }else if(isGranted && !isFirstPermission){//nearby permission ok
+                }else if(isGranted && !isLocationPermission){//nearby permission ok
                     //todo BLUETOOTH_SCAN
 
                 }else {
@@ -84,29 +86,10 @@ public class MainActivity extends AppCompatActivity {
         mDevices = new ArrayList<>();
         bluetoothManager = (BluetoothManager) getBaseContext().getSystemService(Context.BLUETOOTH_SERVICE);
         bluetoothAdapter = bluetoothManager.getAdapter();
-//        checkIfBluetoothIsSupported();
-//        checkIfBluetoothIsEnabled();
 
         createIntentFilter();
 
         setListener();
-    }
-
-   /* private void checkIfBluetoothIsEnabled() {
-        if (!mBluetoothAdapter.isEnabled()) {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-        }
-
-    }*/
-
-    private void checkIfBluetoothIsSupported() {
-        if (mBluetoothAdapter == null) {
-            Toast.makeText(this, "Bluetooth is not supported", Toast.LENGTH_SHORT).show();
-            //todo - decide if should change.
-            finish();
-            return;
-        }
     }
 
     private void setSharedPreferences() {
@@ -148,17 +131,10 @@ public class MainActivity extends AppCompatActivity {
 
         if(resultLocation) {
             requestLocation();
+            openPermissionSettingDialog();
         }else if (resultNearby){
             requestNearby();
-        }
-        else {
-            isShowMassage = true;
-            SharedPreferences.Editor editor = sharedPref.edit();
-            editor.putBoolean(getString(R.string.is_show_message), isShowMassage);
-            editor.apply();
-            tv.setTextColor( getResources().getColor(R.color.purple_200));
-            tv.setText(R.string.showMessage);
-
+            openPermissionSettingDialog();
         }
 
 
@@ -176,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void requestNearby() {
-        isFirstPermission = false;
+        isLocationPermission = false;
         requestPermissionLauncher.launch(Manifest.permission.BLUETOOTH_CONNECT);
     }
 
@@ -192,13 +168,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void requestLocation() {
-        isFirstPermission = true;
+        isLocationPermission = true;
         requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
     }
+
     private void openPermissionSettingDialog() {
 
             String message = "Location and Nearby permissions are important for app functionality. You will be transported to Setting screen because the permissions are permanently disable. Please manually allow them.";
-            AlertDialog alertDialog =
+            alertDialog =
                     new AlertDialog.Builder(MainActivity.this)
                             .setMessage(message)
                             .setPositiveButton(getString(android.R.string.ok),
@@ -304,5 +281,13 @@ public class MainActivity extends AppCompatActivity {
 
              unregisterReceiver(bluetoothScanReceiver);
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+//        if (d!=null && pDialog.isShowing()){
+//            pDialog.dismiss();
+//        }
     }
 }
